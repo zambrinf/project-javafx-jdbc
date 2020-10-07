@@ -17,6 +17,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import model.services.DepartmentService;
+import model.services.SellerService;
 
 public class MainViewController implements Initializable {
 	@FXML
@@ -27,54 +28,60 @@ public class MainViewController implements Initializable {
 	private MenuItem menuItemAbout;
 
 	public void onMenuItemSellerAction() {
-		System.out.println("Menu item seller");
+		loadView("/gui/SellerList.fxml", (SellerListController controller) -> {
+
+			controller.setSellerService(new SellerService());
+			controller.updateTableView();
+		});
+
 	}
 
 	public void onMenuItemDepartmentAction() {
-		
+
 		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) -> {
-			
+
 			controller.setDepartmentService(new DepartmentService());
 			controller.updateTableView();
 		});
-		
+
 	}
 
 	public void onMenuItemAboutAction() {
-		loadView("/gui/About.fxml", x -> {}); //como não precisa realizar nenhuma ação, passa uma função vazia
+		loadView("/gui/About.fxml", x -> {
+		}); // como não precisa realizar nenhuma ação, passa uma função vazia
 	}
-	
-	
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		
 
 	}
-	
-	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {  //keyword synchronized não vai deixar intererromper por sem multi threat
+
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) { // keyword
+																									// synchronized não
+																									// vai deixar
+																									// intererromper por
+																									// sem multi threat
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			VBox newVBox = loader.load();
-			
+
 			Scene mainScene = Main.getMainScene(); // método estatico da classe Main, retornando a mainScene declara lá
-			
-			
+
 			// getRoot() pega o primeiro elemento da MainView, no caso ScrollPane
 			// getContent já é uma referência para o VBox
-			VBox mainVBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();  // precisa dos Castings
-			
+			VBox mainVBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent(); // precisa dos Castings
+
 			Node mainMenu = mainVBox.getChildren().get(0);
 			mainVBox.getChildren().clear();
 			mainVBox.getChildren().add(mainMenu);
 			mainVBox.getChildren().addAll(newVBox.getChildren());
-			
+
 			T controller = loader.getController();
 			initializingAction.accept(controller);
-			
+
 		} catch (IOException e) {
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
-		
+
 	}
 }
